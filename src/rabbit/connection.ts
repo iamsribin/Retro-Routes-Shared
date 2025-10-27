@@ -1,14 +1,17 @@
-import amqp, { Connection, Channel, ConfirmChannel } from "amqplib";
+import * as amqp from "amqplib";
 import { EXCHANGE, QUEUES, BINDINGS } from "../constants/queues";
 
 const DEFAULT_RECONNECT_MS = 1000;
-let connection: Connection | null = null;
+
+type AmqpConnection = Awaited<ReturnType<typeof amqp.connect>>;
+let connection: AmqpConnection | null = null;
 let connecting = false;
 let currentBackoff = DEFAULT_RECONNECT_MS;
 
-export async function initRabbit(url: string): Promise<Connection> {
+export async function initRabbit(url: string): Promise<AmqpConnection> {
   if (connection) return connection;
   if (connecting) {
+    // wait until connection is available (simple polling)
     while (connecting && !connection) {
       await new Promise(res => setTimeout(res, 100));
     }
@@ -19,17 +22,16 @@ export async function initRabbit(url: string): Promise<Connection> {
   try {
     connection = await amqp.connect(url);
     currentBackoff = DEFAULT_RECONNECT_MS;
-
     connection.on("close", (err: any) => {
       console.error("RabbitMQ connection closed", err);
       connection = null;
+      // attempt reconnect (background)
       reconnect(url);
     });
-
     connection.on("error", (err: any) => {
       console.error("RabbitMQ connection error", err);
+      // keep connection null so next get will reconnect
     });
-
     return connection;
   } finally {
     connecting = false;
@@ -37,6 +39,7 @@ export async function initRabbit(url: string): Promise<Connection> {
 }
 
 async function reconnect(url: string) {
+  // exponential backoff (capped)
   try {
     await new Promise(res => setTimeout(res, currentBackoff));
     currentBackoff = Math.min(currentBackoff * 2, 30_000);
@@ -48,37 +51,43 @@ async function reconnect(url: string) {
   }
 }
 
-export async function getConnection(url: string): Promise<Connection> {
+/** Return a pre-initialized connection or create it */
+export async function getConnection(url: string): Promise<AmqpConnection> {
   if (connection) return connection;
   return initRabbit(url);
 }
 
-export async function createChannel(url: string): Promise<Channel> {
+/** Create a regular channel and assert exchange + queues + bindings */
+export async function createChannel(url: string): Promise<amqp.Channel> {
   const conn = await getConnection(url);
   const ch = await conn.createChannel();
-
   await ch.assertExchange(EXCHANGE, "topic", { durable: true });
 
+  // Ensure DLX exists
   const dlx = `${EXCHANGE}.dlx`;
   await ch.assertExchange(dlx, "topic", { durable: true });
 
+  // Assert queues (with DLX configured)
   for (const block of Object.values(QUEUES)) {
     for (const queueName of Object.values(block)) {
       if (typeof queueName !== "string") continue;
       const dlqName = `${queueName}.dlq`;
 
+      // create DLQ and bind to DLX
       await ch.assertQueue(dlqName, { durable: true });
       await ch.bindQueue(dlqName, dlx, `${queueName}.#`);
 
+      // create queue and configure DLX
       await ch.assertQueue(queueName, {
         durable: true,
         arguments: {
-          "x-dead-letter-exchange": dlx
+          "x-dead-letter-exchange": dlx,
         }
       });
     }
   }
 
+  // Bindings
   for (const b of BINDINGS) {
     await ch.bindQueue(b.queue, EXCHANGE, b.routingKey);
   }
@@ -86,13 +95,15 @@ export async function createChannel(url: string): Promise<Channel> {
   return ch;
 }
 
-export async function createConfirmChannel(url: string): Promise<ConfirmChannel> {
+/** Create a ConfirmChannel for reliable publishing */
+export async function createConfirmChannel(url: string): Promise<amqp.ConfirmChannel> {
   const conn = await getConnection(url);
   const ch = await conn.createConfirmChannel();
   await ch.assertExchange(EXCHANGE, "topic", { durable: true });
   return ch;
 }
 
+/** Close connection gracefully */
 export async function closeConnection(): Promise<void> {
   try {
     if (connection) {
@@ -100,6 +111,6 @@ export async function closeConnection(): Promise<void> {
       connection = null;
     }
   } catch (e) {
-    console.warn("Error closing RabbitMQ connection", e);
+    console.warn("error closing rabbit connection", e);
   }
 }
