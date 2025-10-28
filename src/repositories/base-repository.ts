@@ -1,6 +1,8 @@
-import { Document, Model, FilterQuery, UpdateQuery } from "mongoose";
-import { IBaseRepository } from "../interfaces/i-base-repository";
+import { Document, Model, FilterQuery, UpdateQuery } from 'mongoose';
+import { IBaseRepository } from '../interfaces/i-base-repository';
+import { injectable } from 'inversify';
 
+@injectable()
 export class BaseRepository<T extends Document> implements IBaseRepository<T> {
   private _model: Model<T>;
 
@@ -8,9 +10,9 @@ export class BaseRepository<T extends Document> implements IBaseRepository<T> {
     this._model = model;
   }
 
-  async findById(id: string, projection: string = ""): Promise<T | null> {
-    return this._model.findById(id).select(projection).exec();
-  }
+async findById(id: string, projection: string = ''): Promise<T | null> {
+  return this._model.findById(id).select(projection).exec();
+}
 
   async findOne(filter: FilterQuery<T>): Promise<T | null> {
     return this._model.findOne(filter).exec();
@@ -34,7 +36,7 @@ export class BaseRepository<T extends Document> implements IBaseRepository<T> {
     return !!result;
   }
 
-  async findMany(filter: FilterQuery<T> = {}, projection = ""): Promise<T[]> {
+  async findMany(filter: FilterQuery<T> = {}, projection = ''): Promise<T[]> {
     return await this._model.find(filter, projection).lean<T[]>().exec();
   }
 
@@ -46,4 +48,4 @@ export class BaseRepository<T extends Document> implements IBaseRepository<T> {
     const result = await this._model.deleteOne(filter);
     return result.deletedCount === 1;
   }
-}
+} 

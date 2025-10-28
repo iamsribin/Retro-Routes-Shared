@@ -1,7 +1,7 @@
-import { FilterQuery, UpdateQuery, Document } from "mongoose";
+import { FilterQuery, UpdateQuery, Document } from 'mongoose';
 
 export interface IBaseRepository<T extends Document> {
-  findById(id: string, projection?: string): Promise<T | null>;
+  findById(id: string, projection?:string): Promise<T | null>;
   findOne(filter: FilterQuery<T>): Promise<T | null>;
   find(filter: FilterQuery<T>): Promise<T[]>;
   create(item: Partial<T>): Promise<T>;
@@ -11,3 +11,4 @@ export interface IBaseRepository<T extends Document> {
   updateOne(filter: FilterQuery<T>, update: UpdateQuery<T>): Promise<T | null>;
   deleteOne(filter: FilterQuery<T>): Promise<boolean>;
 }
+ 

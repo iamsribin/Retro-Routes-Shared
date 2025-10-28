@@ -8,15 +8,18 @@
     "dist"
   ],
   "scripts": {
-  "build": "tsc -p tsconfig.json && cpx \"src/protos/**/*\" dist/protos",
-  "clean": "rm -rf dist",
-  "prepare": "npm run build"
+    "build": "tsc -p tsconfig.json && cpx \"src/protos/**/*\" dist/protos",
+    "clean": "rm -rf dist",
+    "prepare": "npm run build"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
+    "@types/express": "^5.0.5",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^2.0.0",
     "@types/node": "^24.9.1",
     "cpx": "^1.5.0",
     "ts-node": "^10.9.2",
@@ -27,6 +30,13 @@
     "@grpc/proto-loader": "^0.8.0",
     "@types/amqplib": "^0.10.7",
     "amqplib": "^0.10.8",
-    "mongoose": "^8.19.2"
+    "bcryptjs": "^3.0.2",
+    "express": "^5.1.0",
+    "inversify": "^7.10.4",
+    "ioredis": "^5.8.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.19.2",
+    "multer": "^2.0.2",
+    "typeorm": "^0.3.27"
   }
 }
