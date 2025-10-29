@@ -26,10 +26,12 @@ export * from "./utils/envChecker"
 export * from "./utils/bcrypt"
 export * from "./utils/catchAsync"
 
+export * from "./errors/errorHandler";
+export * from "./errors/index";
 
 
 
 // npm run build
 // npm pack
 
-// npm install ../Retro-Routes-Shared/retro-routes-shared-1.0.0.tgz
+// npm install ../Retro-Routes-Shared/retro-routes-shared-1.0.1.tgz

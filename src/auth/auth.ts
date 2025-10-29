@@ -3,15 +3,33 @@ import jwt, { JwtPayload, TokenExpiredError } from "jsonwebtoken";
 import { StatusCode } from "../interfaces/status-code";
 
 export type AccessPayload = JwtPayload & {
-  clientId: string;
-  role: string;
+  id: string;
+  role: "User" | "Driver" | "Admin";
 };
+
+export function generateJwtToken(
+  payload: AccessPayload,
+  secret: jwt.Secret,
+  duration: jwt.SignOptions["expiresIn"] = "1h"
+): string {
+  const token = jwt.sign({ id: payload.id, role: payload.role }, secret, {
+    expiresIn: duration,
+  });
+
+  return token;
+}
+
+export function verifyToken(token: string, secret: jwt.Secret) {
+  try {
+    return jwt.verify(token, secret) as JwtPayload;
+  } catch (err: unknown) {
+    throw err;
+  }
+}
 
 
 export function verifyAccessToken(secret: string): RequestHandler {
-  const s = secret;
-  if (!s) {
-    // fail fast to avoid silent misconfig
+  if (!secret) {
     throw new Error(
       "JWT access token secret missing. Call verifyAccessToken(secret) with a secret or set JWT_ACCESS_TOKEN_SECRET in env."
     );
@@ -30,13 +48,16 @@ export function verifyAccessToken(secret: string): RequestHandler {
         return;
       }
 
-      const decoded = jwt.verify(token, s) as JwtPayload;
+      const decoded = jwt.verify(token, secret) as JwtPayload;
 
       if (decoded.role !== req.headers["x-user-role"]) {
-			return res.status(401).json({ error: "Unauthorized access" });
-		  }
+        return res.status(401).json({ error: "Unauthorized access" });
+      }
 
-      req.headers["x-user-payload"] = JSON.stringify({ id: decoded.clientId, role: decoded.role });
+      req.headers["x-user-payload"] = JSON.stringify({
+        id: decoded.id,
+        role: decoded.role,
+      });
 
       return next();
     } catch (err: unknown) {
