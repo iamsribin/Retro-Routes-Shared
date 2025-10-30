@@ -41,7 +41,7 @@ export function verifyAccessToken(secret: string): RequestHandler {
         req.cookies?.token || req.headers.authorization?.split(" ")[1];
 
       if (!token) {
-        res.status(StatusCode.BadGateway).json({
+        res.status(StatusCode.Forbidden).json({
           success: false,
           message: "No token provided",
         });
