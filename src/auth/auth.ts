@@ -37,8 +37,7 @@ export function verifyAccessToken(secret: string): RequestHandler {
 
   return (req, res, next) => {
     try {
-      const token =
-        req.cookies?.token || req.headers.authorization?.split(" ")[1];
+      const token = req.headers.authorization?.split(" ")[1];
 
       if (!token) {
         res.status(StatusCode.Forbidden).json({
@@ -51,7 +50,7 @@ export function verifyAccessToken(secret: string): RequestHandler {
       const decoded = jwt.verify(token, secret) as JwtPayload;
 
       if (decoded.role !== req.headers["x-user-role"]) {
-        return res.status(401).json({ error: "Unauthorized access" });
+        return res.status(StatusCode.Unauthorized).json({ error: "Unauthorized access" });
       }
 
       req.headers["x-user-payload"] = JSON.stringify({
@@ -64,13 +63,13 @@ export function verifyAccessToken(secret: string): RequestHandler {
       // token expired
       if (err instanceof TokenExpiredError) {
         return res
-          .status(401)
+          .status(StatusCode.Forbidden)
           .json({ message: "Token expired", reason: "token_expired" });
       }
 
       // invalid token or other jwt errors
       return res
-        .status(401)
+        .status(StatusCode.Forbidden)
         .json({ message: "Invalid token", reason: "invalid_token" });
     }
   };
