@@ -1,6 +1,8 @@
 import { RequestHandler } from "express";
 import jwt, { JwtPayload, TokenExpiredError } from "jsonwebtoken";
 import { StatusCode } from "../interfaces/status-code";
+import { getRedisService } from "../redis/client";
+import { RedisService } from "../redis/RedisService";
 
 export type AccessPayload = JwtPayload & {
   id: string;
@@ -35,7 +37,7 @@ export function verifyAccessToken(secret: string): RequestHandler {
     );
   }
 
-  return (req, res, next) => {
+  return async (req, res, next) => {
     try {
       const token = req.headers.authorization?.split(" ")[1];
 
@@ -53,6 +55,16 @@ export function verifyAccessToken(secret: string): RequestHandler {
         return res.status(StatusCode.Unauthorized).json({ error: "Unauthorized access" });
       }
 
+      const redisClient = RedisService.getInstance();
+      const isBlacklisted = await redisClient.checkBlacklistedToken(decoded.id);
+      console.log("isBlacklisted",isBlacklisted,"id",decoded.id);
+      
+      if (isBlacklisted) {
+        res.clearCookie("refreshToken");
+        await redisClient.removeBlacklistedToken(decoded.id);
+        return res.status(StatusCode.Forbidden).json({ message: "Token is blacklisted" });
+      }
+
       req.headers["x-user-payload"] = JSON.stringify({
         id: decoded.id,
         role: decoded.role,
@@ -64,7 +76,7 @@ export function verifyAccessToken(secret: string): RequestHandler {
       if (err instanceof TokenExpiredError) {
         return res
           .status(StatusCode.Forbidden)
-          .json({ message: "Token expired", reason: "token_expired" });
+          .json({ message: "token expired", reason: "token_expired" });
       }
 
       // invalid token or other jwt errors

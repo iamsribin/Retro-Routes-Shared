@@ -4,6 +4,6 @@ export function createRedisService(redisUrl: string) {
   return RedisService.init(redisUrl);
 }
 
-export function getRedisService() {
+export function getRedisService(): RedisService {
   return RedisService.getInstance();
 }

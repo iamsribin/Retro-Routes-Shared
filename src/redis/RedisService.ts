@@ -43,8 +43,8 @@ export class RedisService {
    * Returns the singleton instance. If not initialized, will attempt to init from process.env.REDIS_URL.
    */
   public static getInstance() {
-    if (!this.instance) {
-      this.init();
+ if (!this.instance) {
+    throw new Error("RedisService not initialized. Call RedisService.init(url) first.");
     }
     return this.instance as RedisService;
   }
@@ -110,4 +110,18 @@ export class RedisService {
     const [lng, lat] = pos[0] as [string, string];
     return { latitude: parseFloat(lat), longitude: parseFloat(lng) };
   }
+
+  async addBlacklistedToken(token: string, expSeconds: number) {
+  await this.redis.set(`blacklist:${token}`, "true", "EX", expSeconds);
+}
+
+  public async checkBlacklistedToken(token: string) {
+    const isBlacklisted = await this.redis.exists(`blacklist:${token}`);
+    return !!isBlacklisted;
+  }
+
+  public async removeBlacklistedToken(token: string) {
+  const result = await this.redis.del(`blacklist:${token}`);
+  return result > 0;
+}
 }
