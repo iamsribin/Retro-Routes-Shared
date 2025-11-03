@@ -1,7 +1,6 @@
 import { RequestHandler } from "express";
 import jwt, { JwtPayload, TokenExpiredError } from "jsonwebtoken";
 import { StatusCode } from "../interfaces/status-code";
-import { getRedisService } from "../redis/client";
 import { RedisService } from "../redis/RedisService";
 
 export type AccessPayload = JwtPayload & {

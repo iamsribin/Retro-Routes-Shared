@@ -14,3 +14,6 @@ export const ForbiddenError = (message = "Forbidden", opts?: any) =>
 
 export const InternalError = (message = "Internal server error", opts?: any) =>
   new (require("./HttpError").HttpError)(500, message, { code: "INTERNAL_ERROR", safe: false, ...opts });
+
+export const ConflictError = (message = "Conflict Error", opts?: any) =>
+  new (require("./HttpError").HttpError)(409, message, { code: "INTERNAL_ERROR", safe: false, ...opts });

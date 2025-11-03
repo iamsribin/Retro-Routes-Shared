@@ -10,11 +10,13 @@ export type { AccessPayload } from "./auth/auth";
 
 
 export * from "./interfaces/i-mongo-base-repository";
+export * from "./interfaces/i-sql-base-repository";
 export * from "./interfaces/common-response"
 export * from "./interfaces/common-types"
 export * from "./interfaces/status-code"
 
 export * from "./repositories/mongo-base-repository"
+export * from "./repositories/sql-base-repository"
 
 export * from "./redis/client"
 export * from "./redis/RedisService"
