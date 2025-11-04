@@ -124,4 +124,17 @@ export class RedisService {
   const result = await this.redis.del(`blacklist:${token}`);
   return result > 0;
 }
+
+public async set(key: string, value:any, ttlSeconds = 30) {
+  await this.redis.set(key, value, "EX", ttlSeconds);
+}
+
+public async get(key: string): Promise<string | null> {
+  return await this.redis.get(key);
+}
+
+public async remove(key: string): Promise<boolean> {
+  const result = await this.redis.del(key);
+  return result > 0;
+}
 }

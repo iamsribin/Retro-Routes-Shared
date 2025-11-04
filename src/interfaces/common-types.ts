@@ -8,3 +8,5 @@ export interface LocationCoordinates {
     latitude: number;
     longitude: number;
 }
+
+export type IRole = "User"|"Admin"| "Driver"

@@ -32,6 +32,8 @@ export class SqlBaseRepository<T extends ObjectLiteral> implements ISqlBaseRepos
       const entity = this.repo.create(data);
       return await this.repo.save(entity);
     } catch (error) {
+      console.log("create",error);
+      
       return null
     }
   }

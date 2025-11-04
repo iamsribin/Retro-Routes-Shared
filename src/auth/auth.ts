@@ -41,6 +41,8 @@ export function verifyAccessToken(secret: string): RequestHandler {
       const token = req.headers.authorization?.split(" ")[1];
 
       if (!token) {
+        console.log("No token provided");
+        
         res.status(StatusCode.Forbidden).json({
           success: false,
           message: "No token provided",
@@ -49,6 +51,7 @@ export function verifyAccessToken(secret: string): RequestHandler {
       }
 
       const decoded = jwt.verify(token, secret) as JwtPayload;
+      console.log(decoded.role," !== ",req.headers["x-user-role"]);
 
       if (decoded.role !== req.headers["x-user-role"]) {
         return res.status(StatusCode.Unauthorized).json({ error: "Unauthorized access" });
@@ -64,10 +67,20 @@ export function verifyAccessToken(secret: string): RequestHandler {
         return res.status(StatusCode.Forbidden).json({ message: "Token is blacklisted" });
       }
 
-      req.headers["x-user-payload"] = JSON.stringify({
+      const payload = {
         id: decoded.id,
         role: decoded.role,
+      }
+
+        req.headers["x-user-payload"] = JSON.stringify(payload);
+
+        const signed = jwt.sign(payload,secret!, {
+        algorithm: "HS256",
+        expiresIn: "30s",
+        issuer: "api-gateway",
       });
+
+      req.headers["x-gateway-jwt"] = signed;
 
       return next();
     } catch (err: unknown) {

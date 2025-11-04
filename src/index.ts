@@ -6,6 +6,7 @@ export * from "./constants/queues"
 export * from "./protos";
 
 export * from "./auth/auth";
+export * from "./auth/verifyGatewayJwt";
 export type { AccessPayload } from "./auth/auth";
 
 
