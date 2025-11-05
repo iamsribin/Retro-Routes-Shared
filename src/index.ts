@@ -1,4 +1,3 @@
-// export * from "./repositories/base-repository";
 
 export * from "./constants/redis-keys";
 export * from "./constants/queues"
@@ -21,7 +20,6 @@ export * from "./repositories/sql-base-repository"
 
 export * from "./redis/client"
 export * from "./redis/RedisService"
-export * from "./redis/types"
 
 export * from "./rabbit/connection"
 export * from "./rabbit/publisher"
@@ -33,6 +31,9 @@ export * from "./utils/catchAsync"
 
 export * from "./errors/errorHandler";
 export * from "./errors/index";
+
+export * from "./mongo/connection";
+
 
 
 

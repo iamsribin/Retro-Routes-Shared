@@ -6,12 +6,10 @@ import {
   ONLINE_DRIVER_DETAILS_PREFIX,
   RIDE_DRIVER_DETAILS_PREFIX,
 } from "../constants/redis-keys";
-import { DriverDetails } from "./types";
+import { OnlineDriverDetails } from "../interfaces/common-types";
 
 /**
  * RedisService
- * - Singleton wrapper around ioredis
- * - Methods mirror your helper functions, but on a class instance so you can DI / mock easily
  */
 export class RedisService {
   private static instance: RedisService | null = null;
@@ -25,10 +23,7 @@ export class RedisService {
     });
   }
 
-  /**
-   * init must be called once at service bootstrap (or call getInstance() which will auto-init from env)
-   * @param redisUrl optional redis connection url
-   */
+
   public static init(url?: string) {
     if (this.instance) return this.instance;
     if (!url) {
@@ -39,9 +34,6 @@ export class RedisService {
     return this.instance;
   }
 
-  /**
-   * Returns the singleton instance. If not initialized, will attempt to init from process.env.REDIS_URL.
-   */
   public static getInstance() {
  if (!this.instance) {
     throw new Error("RedisService not initialized. Call RedisService.init(url) first.");
@@ -49,7 +41,6 @@ export class RedisService {
     return this.instance as RedisService;
   }
 
-  // expose raw client for advanced ops
   public raw() {
     return this.redis;
   }
@@ -72,7 +63,7 @@ export class RedisService {
   }
 
   // DRIVER DETAILS
-  public async setDriverDetails(driverDetails: DriverDetails, isRide = false, ttlSeconds = 120) {
+  public async setDriverDetails(driverDetails: OnlineDriverDetails, isRide = false, ttlSeconds = 120) {
     const prefix = isRide ? RIDE_DRIVER_DETAILS_PREFIX : ONLINE_DRIVER_DETAILS_PREFIX;
     const key = `${prefix}${driverDetails.driverId}`;
     await this.redis.set(key, JSON.stringify(driverDetails), "EX", ttlSeconds);
@@ -83,7 +74,7 @@ export class RedisService {
     const prefix = isRide ? RIDE_DRIVER_DETAILS_PREFIX : ONLINE_DRIVER_DETAILS_PREFIX;
     const key = `${prefix}${driverId}`;
     const val = await this.redis.get(key);
-    return val ? (JSON.parse(val) as DriverDetails) : null;
+    return val ? (JSON.parse(val) as OnlineDriverDetails) : null;
   }
 
   public async removeOnlineDriver(driverId: string, isRide = false) {

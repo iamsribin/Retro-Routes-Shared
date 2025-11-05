@@ -7,7 +7,6 @@ import { InternalError } from "../errors";
 export class SqlBaseRepository<T extends ObjectLiteral> implements ISqlBaseRepository<T> {
   protected repo: Repository<T>;
 
-  // Accept DataSource from the caller
   constructor(entity: { new (): T }, dataSource: DataSource) {
     this.repo = dataSource.getRepository(entity);
   }

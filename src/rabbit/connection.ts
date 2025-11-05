@@ -11,7 +11,7 @@ let currentBackoff = DEFAULT_RECONNECT_MS;
 export async function initRabbit(url: string): Promise<AmqpConnection> {
   if (connection) return connection;
   if (connecting) {
-    // wait until connection is available (simple polling)
+    // wait until connection is available 
     while (connecting && !connection) {
       await new Promise(res => setTimeout(res, 100));
     }
@@ -25,12 +25,11 @@ export async function initRabbit(url: string): Promise<AmqpConnection> {
     connection.on("close", (err: any) => {
       console.error("RabbitMQ connection closed", err);
       connection = null;
-      // attempt reconnect (background)
+      // attempt reconnect 
       reconnect(url);
     });
     connection.on("error", (err: any) => {
       console.error("RabbitMQ connection error", err);
-      // keep connection null so next get will reconnect
     });
     return connection;
   } finally {
@@ -39,7 +38,6 @@ export async function initRabbit(url: string): Promise<AmqpConnection> {
 }
 
 async function reconnect(url: string) {
-  // exponential backoff (capped)
   try {
     await new Promise(res => setTimeout(res, currentBackoff));
     currentBackoff = Math.min(currentBackoff * 2, 30_000);
@@ -51,23 +49,19 @@ async function reconnect(url: string) {
   }
 }
 
-/** Return a pre-initialized connection or create it */
 export async function getConnection(url: string): Promise<AmqpConnection> {
   if (connection) return connection;
   return initRabbit(url);
 }
 
-/** Create a regular channel and assert exchange + queues + bindings */
 export async function createChannel(url: string): Promise<amqp.Channel> {
   const conn = await getConnection(url);
   const ch = await conn.createChannel();
   await ch.assertExchange(EXCHANGE, "topic", { durable: true });
 
-  // Ensure DLX exists
   const dlx = `${EXCHANGE}.dlx`;
   await ch.assertExchange(dlx, "topic", { durable: true });
 
-  // Assert queues (with DLX configured)
   for (const block of Object.values(QUEUES)) {
     for (const queueName of Object.values(block)) {
       if (typeof queueName !== "string") continue;

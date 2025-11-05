@@ -1,7 +1,7 @@
 {
-  "name": "@retro-routes/shared",
+  "name": "@Pick2Me/shared",
   "version": "1.0.1",
-  "description": "Shared library for Retro Routes microservices",
+  "description": "Shared library for Pick2Me microservices",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -14,10 +14,6 @@
   },
   "publishConfig": {
     "access": "public"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/<your-github-username-or-org>/retro-routes-shared.git"
   },
   "author": "Sribin",
   "license": "ISC",
@@ -34,9 +30,9 @@
   "dependencies": {
     "@grpc/grpc-js": "^1.14.0",
     "@grpc/proto-loader": "^0.8.0",
-    "@retro-routes/shared": "file:retro-routes-shared-1.0.1.tgz",
     "amqplib": "^0.10.8",
     "bcryptjs": "^3.0.2",
+    "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "inversify": "^7.10.4",
     "ioredis": "^5.8.2",

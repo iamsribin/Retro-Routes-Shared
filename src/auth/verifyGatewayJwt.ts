@@ -1,12 +1,10 @@
-// src/middleware/verifyGatewayJwt.ts
 import { Request, Response, NextFunction, RequestHandler } from "express";
-import jwt, { JwtPayload } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import { AccessPayload } from "./auth";
 import { IRole } from "../interfaces/common-types";
 
 
 declare global {
-  // augment Express Request to carry parsed gateway user
   namespace Express {
     interface Request {
       gatewayUser?: AccessPayload | null;
@@ -17,9 +15,9 @@ declare global {
 /**
  * Factory middleware to verify gateway-signed JWT.
  * - strict: if true, responds 401 on missing/invalid token; if false, attaches null and calls next().
- * - options.role: optional string or array to require a role match (e.g. 'Driver' or ['Admin','Driver'])
+ * - options.role: optional string or array to require a role match
  */
-export function verifyGatewayJwt(strict = true, GATEWAY_SECRET:string, options?: { role?: string | string[] }): RequestHandler {
+export function verifyGatewayJwt(strict = true, GATEWAY_SECRET:string, options?: { role?: IRole | IRole[] }): RequestHandler {
       
     if (!GATEWAY_SECRET) {
      console.warn("GATEWAY_SHARED_SECRET is not set. Gateway JWT verification will fail.");

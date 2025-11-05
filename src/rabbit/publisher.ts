@@ -1,7 +1,6 @@
 import * as amqp from "amqplib";
 import { EXCHANGE } from "../constants/queues";
 
-/** publish using confirm channel, resolving when broker acknowledges */
 export async function publishConfirm(
   ch: amqp.ConfirmChannel,
   routingKey: string,
@@ -17,11 +16,11 @@ export async function publishConfirm(
   });
 }
 
-/** small helper that creates its own confirm channel and publishes once (not recommended for high throughput) */
-export async function publishOnce(url: string, routingKey: string, payload: any) {
-  const conn = await (await import("./connection")).getConnection(url);
-  const ch = await conn.createConfirmChannel();
-  await ch.assertExchange(EXCHANGE, "topic", { durable: true });
-  await publishConfirm(ch, routingKey, payload);
-  await ch.close();
-}
+// small helper that creates its own confirm channel and publishes once 
+// export async function publishOnce(url: string, routingKey: string, payload: any) {
+//   const conn = await (await import("./connection")).getConnection(url);
+//   const ch = await conn.createConfirmChannel();
+//   await ch.assertExchange(EXCHANGE, "topic", { durable: true });
+//   await publishConfirm(ch, routingKey, payload);
+//   await ch.close();
+// }
