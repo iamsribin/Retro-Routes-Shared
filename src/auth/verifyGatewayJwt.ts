@@ -12,11 +12,7 @@ declare global {
   }
 }
 
-/**
- * Factory middleware to verify gateway-signed JWT.
- * - strict: if true, responds 401 on missing/invalid token; if false, attaches null and calls next().
- * - options.role: optional string or array to require a role match
- */
+
 export function verifyGatewayJwt(strict = true, GATEWAY_SECRET:string, options?: { role?: IRole | IRole[] }): RequestHandler {
       
     if (!GATEWAY_SECRET) {
@@ -35,7 +31,6 @@ export function verifyGatewayJwt(strict = true, GATEWAY_SECRET:string, options?:
     try {
       const decoded = jwt.verify(raw, GATEWAY_SECRET as string, { issuer: "api-gateway" }) as AccessPayload;
 
-      // Validate required claims
       if (!decoded || typeof decoded !== "object" || !decoded.id || !decoded.role) {
         if (strict) return res.status(401).json({ message: "Invalid gateway token (claims missing)" });
         req.gatewayUser = null;
@@ -60,7 +55,6 @@ export function verifyGatewayJwt(strict = true, GATEWAY_SECRET:string, options?:
       req.gatewayUser = gatewayUser;
       return next();
     } catch (err) {
-      // jwt.verify throws for expired/invalid tokens
       const message = (err as Error).message || "Invalid gateway token";
       if (strict) return res.status(401).json({ message: `Invalid gateway token: ${message}` });
       req.gatewayUser = null;

@@ -2,6 +2,7 @@ import { RequestHandler } from "express";
 import jwt, { JwtPayload, TokenExpiredError } from "jsonwebtoken";
 import { StatusCode } from "../interfaces/status-code";
 import { RedisService } from "../redis/RedisService";
+import { InternalError } from "../errors";
 
 export type AccessPayload = JwtPayload & {
   id: string;
@@ -12,7 +13,7 @@ export function generateJwtToken(
   payload: AccessPayload,
   secret: jwt.Secret,
   duration: jwt.SignOptions["expiresIn"] = "1h"
-): string {
+): string {  
   const token = jwt.sign({ id: payload.id, role: payload.role }, secret, {
     expiresIn: duration,
   });
@@ -22,12 +23,14 @@ export function generateJwtToken(
 
 export function verifyToken(token: string, secret: jwt.Secret) {
   try {
+    
+    if (!secret) throw InternalError("JWT secret key not provided");
+    
     return jwt.verify(token, secret) as JwtPayload;
   } catch (err: unknown) {
     throw err;
   }
 }
-
 
 export function verifyAccessToken(secret: string): RequestHandler {
   if (!secret) {
@@ -38,43 +41,51 @@ export function verifyAccessToken(secret: string): RequestHandler {
 
   return async (req, res, next) => {
     try {
-      const token = req.headers.authorization?.split(" ")[1];
+      // const token = req.headers.authorization?.split(" ")[1];
+
+      const  token = (req as any).cookies?.accessToken;
 
       if (!token) {
         console.log("No token provided");
         
         res.status(StatusCode.Forbidden).json({
-          success: false,
-          message: "No token provided",
+          success: false, 
+          message: "No token provided", 
         });
         return;
       }
 
       const decoded = jwt.verify(token, secret) as JwtPayload;
-      console.log(decoded.role," !== ",req.headers["x-user-role"]);
 
       if (decoded.role !== req.headers["x-user-role"]) {
-        return res.status(StatusCode.Unauthorized).json({ error: "Unauthorized access" });
+        return res
+          .status(StatusCode.Unauthorized)
+          .json({ error: "Unauthorized access" });
       }
 
       const redisClient = RedisService.getInstance();
       const isBlacklisted = await redisClient.checkBlacklistedToken(decoded.id);
-      console.log("isBlacklisted",isBlacklisted,"id",decoded.id);
-      
+      console.log("isBlacklisted", isBlacklisted, "id", decoded.id);
+
       if (isBlacklisted) {
+        console.log("blacklisted");
+        
         res.clearCookie("refreshToken");
+        res.clearCookie("accessToken");
         await redisClient.removeBlacklistedToken(decoded.id);
-        return res.status(StatusCode.Forbidden).json({ message: "Token is blacklisted" });
+        return res
+          .status(StatusCode.Forbidden)
+          .json({ message: "Token is blacklisted" });
       }
 
       const payload = {
         id: decoded.id,
         role: decoded.role,
-      }
+      };
 
-        req.headers["x-user-payload"] = JSON.stringify(payload);
+      req.headers["x-user-payload"] = JSON.stringify(payload);
 
-        const signed = jwt.sign(payload,secret!, {
+      const signed = jwt.sign(payload, secret!, {
         algorithm: "HS256",
         expiresIn: "30s",
         issuer: "api-gateway",
@@ -84,17 +95,20 @@ export function verifyAccessToken(secret: string): RequestHandler {
 
       return next();
     } catch (err: unknown) {
-      // token expired
       if (err instanceof TokenExpiredError) {
-        return res
+        console.log("token expired");
+        
+         res
           .status(StatusCode.Forbidden)
           .json({ message: "token expired", reason: "token_expired" });
+          return
       }
+              console.log("invalid expired");
 
-      // invalid token or other jwt errors
-      return res
+       res
         .status(StatusCode.Forbidden)
         .json({ message: "Invalid token", reason: "invalid_token" });
+        return
     }
   };
 }

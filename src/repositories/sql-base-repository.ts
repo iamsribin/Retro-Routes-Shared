@@ -1,7 +1,6 @@
 import { DeepPartial, Repository, DataSource, ObjectLiteral } from "typeorm";
 import { injectable } from "inversify";
 import { ISqlBaseRepository } from "../interfaces/i-sql-base-repository";
-import { InternalError } from "../errors";
 
 @injectable()
 export class SqlBaseRepository<T extends ObjectLiteral> implements ISqlBaseRepository<T> {
@@ -46,11 +45,12 @@ export class SqlBaseRepository<T extends ObjectLiteral> implements ISqlBaseRepos
     }
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: string): Promise<boolean> {
     try {
-      await this.repo.delete(id);
+     const result = await this.repo.delete(id);
+     return !!result;
     } catch (error) {
-      throw InternalError("something went wrong")
+      return false
     }
   }
 

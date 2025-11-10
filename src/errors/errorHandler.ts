@@ -1,9 +1,6 @@
 import { Request, Response, NextFunction, ErrorRequestHandler } from "express";
 import { HttpError } from "../errors/HttpError";
 
-/**
- * Centralized Express error handler to use in every service
- */
 export const errorHandler: ErrorRequestHandler =(err: unknown, req: Request, res: Response, next: NextFunction)=> {
  
   if (err instanceof HttpError) {

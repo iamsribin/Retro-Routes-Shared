@@ -8,14 +8,10 @@ import {
 } from "../constants/redis-keys";
 import { OnlineDriverDetails } from "../interfaces/common-types";
 
-/**
- * RedisService
- */
 export class RedisService {
   private static instance: RedisService | null = null;
   private redis: Redis;
 
-  // private to enforce singleton
   private constructor(redisClient: Redis) {
     this.redis = redisClient;
     this.redis.on("error", (err) => {
@@ -102,6 +98,7 @@ export class RedisService {
     return { latitude: parseFloat(lat), longitude: parseFloat(lng) };
   }
 
+  //BLACK LIST
   async addBlacklistedToken(token: string, expSeconds: number) {
   await this.redis.set(`blacklist:${token}`, "true", "EX", expSeconds);
 }
@@ -116,6 +113,7 @@ export class RedisService {
   return result > 0;
 }
 
+// CRUD
 public async set(key: string, value:any, ttlSeconds = 30) {
   await this.redis.set(key, value, "EX", ttlSeconds);
 }
