@@ -1,6 +1,5 @@
 
 export * from "./constants/redis-keys";
-export * from "./constants/queues"
 
 export * from "./protos";
 
@@ -21,9 +20,9 @@ export * from "./repositories/sql-base-repository"
 export * from "./redis/client"
 export * from "./redis/RedisService"
 
-export * from "./rabbit/connection"
-export * from "./rabbit/publisher"
-
+export * from "./messaging/rabbitmq.config"
+export * from "./messaging/rabbitmq.utils"
+export * from "./messaging/rabbitmq"
 
 export * from "./utils/envChecker"
 export * from "./utils/bcrypt"
