@@ -3,6 +3,17 @@ package payment_package;
 
 service PaymentService {
   rpc CreateDriverConnectAccount(CreateDriverConnectAccountRequest) returns (CreateDriverConnectAccountResponse);
+  rpc GetUserWalletBalanceAndTransactions(GetUserWalletBalanceAndTransactionsReq) returns (GetUserWalletBalanceAndTransactionsRes);
+  
+}
+
+message GetUserWalletBalanceAndTransactionsReq {
+string userId = 1;
+}
+
+message GetUserWalletBalanceAndTransactionsRes {
+string balance = 1;
+int32 transactions = 2;
 }
 
 message CreateDriverConnectAccountRequest {

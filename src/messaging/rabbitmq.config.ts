@@ -2,6 +2,7 @@ export const EXCHANGES = {
   BOOKING: 'booking.exchange',
   PAYMENT: 'payment.exchange',
   DRIVER: 'driver.exchange',
+  USER: 'user.exchange',
   NOTIFICATION: 'notification.exchange',
 } as const;
 
@@ -12,6 +13,7 @@ export const ROUTING_KEYS = {
   PAYMENT_FAILED: 'payment.failed',
   DRIVER_ASSIGNED: 'driver.assigned',
   DRIVER_LOCATION_UPDATE: 'driver.location.update',
+  USER_WALLET_CREATE: 'user.wallet.create',
 } as const;
 
 export const QUEUES = {
