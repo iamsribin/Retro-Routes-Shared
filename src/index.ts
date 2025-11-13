@@ -23,6 +23,7 @@ export * from "./redis/RedisService"
 export * from "./messaging/rabbitmq.config"
 export * from "./messaging/rabbitmq.utils"
 export * from "./messaging/rabbitmq"
+// export * from "./messaging/rabbitmq.bind"
 
 export * from "./utils/envChecker"
 export * from "./utils/bcrypt"

@@ -25,15 +25,37 @@ export class RabbitMQ {
     });
   }
 
+    public static getChannel(): Channel {
+    if (!this.channel) throw new Error('RabbitMQ channel not initialized — call connect() first');
+    return this.channel;
+  }
+
+ public static async bindQueueToExchanges(
+  queueName: string,
+  bindings: { exchange: string; routingKeys: string[] }[],
+) {
+  // Setup DLQ once
+  const channel = this.getChannel();
+  await setupQueueWithDLQ(channel, `${queueName}.retry.exchange`, queueName);
+
+  for (const { exchange, routingKeys } of bindings) {
+    for (const key of routingKeys) {
+      await channel.bindQueue(queueName, exchange, key);
+      console.log(`[RabbitMQ] 🔗 Bound ${queueName} → ${exchange} (${key})`);
+    }
+  }
+}
+
+
   public static async setupExchange(exchange: string, type: 'topic' | 'direct' | 'fanout' = 'topic') {
     if (!this.channel) throw new Error('RabbitMQ not connected');
     await this.channel.assertExchange(exchange, type, { durable: true });
   }
 
-  public static async setupQueueWithRetry(exchange: string, queueName: string, routingKey: string) {
-    if (!this.channel) throw new Error('RabbitMQ not connected');
-    await setupQueueWithDLQ(this.channel, exchange, queueName, routingKey);
-  }
+  // public static async setupQueueWithRetry(exchange: string, queueName: string, routingKey: string) {
+  //   if (!this.channel) throw new Error('RabbitMQ not connected');
+  //   await setupQueueWithDLQ(this.channel, exchange, queueName, routingKey);
+  // }
 
   public static async publish(exchange: string, routingKey: string, data: any) {
     if (!this.channel) throw new Error('RabbitMQ not connected');

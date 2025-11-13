@@ -13,14 +13,15 @@ export const ROUTING_KEYS = {
   PAYMENT_FAILED: 'payment.failed',
   DRIVER_ASSIGNED: 'driver.assigned',
   DRIVER_LOCATION_UPDATE: 'driver.location.update',
-  USER_WALLET_CREATE: 'user.wallet.create',
+  USER_WALLET_CREATE: 'user-payment.wallet.create',
+  USER_ADDED_REWARD_AMOUNT: 'user-payment.added.reward.amount',
 } as const;
 
 export const QUEUES = {
-  BOOKING_SERVICE: 'booking.queue',
-  PAYMENT_SERVICE: 'payment.queue',
-  DRIVER_SERVICE: 'driver.queue',
-  NOTIFICATION_SERVICE: 'notification.queue',
+  BOOKING_QUEUE: 'booking.queue',
+  PAYMENT_QUEUE: 'payment.queue',
+  DRIVER_QUEUE: 'driver.queue',
+  REALTIME_QUEUE: 'realtime.queue',
 } as const;
 
 // DLQ and retry conventions
