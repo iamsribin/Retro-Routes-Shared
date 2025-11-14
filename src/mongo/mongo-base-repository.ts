@@ -1,5 +1,5 @@
 import { Document, Model, FilterQuery, UpdateQuery } from 'mongoose';
-import { IMongoBaseRepository } from '../interfaces/i-mongo-base-repository';
+import { IMongoBaseRepository } from '../mongo/i-mongo-base-repository';
 import { injectable } from 'inversify';
 
 @injectable()

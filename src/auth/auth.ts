@@ -1,7 +1,6 @@
-import { RequestHandler } from "express";
-import jwt, { JwtPayload, TokenExpiredError } from "jsonwebtoken";
-import { StatusCode } from "../interfaces/status-code";
-import { RedisService } from "../redis/RedisService";
+import jwt from "jsonwebtoken";
+import type { JwtPayload } from "jsonwebtoken";
+
 import { InternalError } from "../errors";
 
 export type AccessPayload = JwtPayload & {
@@ -32,83 +31,83 @@ export function verifyToken(token: string, secret: jwt.Secret) {
   }
 }
 
-export function verifyAccessToken(secret: string): RequestHandler {
-  if (!secret) {
-    throw new Error(
-      "JWT access token secret missing. Call verifyAccessToken(secret) with a secret or set JWT_ACCESS_TOKEN_SECRET in env."
-    );
-  }
+// export function verifyAccessToken(secret: string): RequestHandler {
+//   if (!secret) {
+//     throw new Error(
+//       "JWT access token secret missing. Call verifyAccessToken(secret) with a secret or set JWT_ACCESS_TOKEN_SECRET in env."
+//     );
+//   }
 
-  return async (req, res, next) => {
-    try {
-      // const token = req.headers.authorization?.split(" ")[1];
+//   return async (req, res, next) => {
+//     try {
+//       // const token = req.headers.authorization?.split(" ")[1];
 
-      const  token = (req as any).cookies?.accessToken;
+//       const  token = (req as any).cookies?.accessToken;
 
-      if (!token) {
-        console.log("No token provided");
+//       if (!token) {
+//         console.log("No token provided");
         
-        res.status(StatusCode.Forbidden).json({
-          success: false, 
-          message: "No token provided", 
-        });
-        return;
-      }
+//         res.status(StatusCode.Forbidden).json({
+//           success: false, 
+//           message: "No token provided", 
+//         });
+//         return;
+//       }
 
-      const decoded = jwt.verify(token, secret) as JwtPayload;
+//       const decoded = jwt.verify(token, secret) as JwtPayload;
 
-      if (decoded.role !== req.headers["x-user-role"]) {
-        return res
-          .status(StatusCode.Unauthorized)
-          .json({ error: "Unauthorized access" });
-      }
+//       if (decoded.role !== req.headers["x-user-role"]) {
+//         return res
+//           .status(StatusCode.Unauthorized)
+//           .json({ error: "Unauthorized access" });
+//       }
 
-      const redisClient = RedisService.getInstance();
-      const isBlacklisted = await redisClient.checkBlacklistedToken(decoded.id);
-      console.log("isBlacklisted", isBlacklisted, "id", decoded.id);
+//       const redisClient = RedisService.getInstance();
+//       const isBlacklisted = await redisClient.checkBlacklistedToken(decoded.id);
+//       console.log("isBlacklisted", isBlacklisted, "id", decoded.id);
 
-      if (isBlacklisted) {
-        console.log("blacklisted");
+//       if (isBlacklisted) {
+//         console.log("blacklisted");
         
-        res.clearCookie("refreshToken");
-        res.clearCookie("accessToken");
-        await redisClient.removeBlacklistedToken(decoded.id);
-        return res
-          .status(StatusCode.Forbidden)
-          .json({ message: "Token is blacklisted" });
-      }
+//         res.clearCookie("refreshToken");
+//         res.clearCookie("accessToken");
+//         await redisClient.removeBlacklistedToken(decoded.id);
+//         return res
+//           .status(StatusCode.Forbidden)
+//           .json({ message: "Token is blacklisted" });
+//       }
 
-      const payload = {
-        id: decoded.id,
-        role: decoded.role,
-      };
+//       const payload = {
+//         id: decoded.id,
+//         role: decoded.role,
+//       };
 
-      req.headers["x-user-payload"] = JSON.stringify(payload);
+//       req.headers["x-user-payload"] = JSON.stringify(payload);
 
-      const signed = jwt.sign(payload, secret!, {
-        algorithm: "HS256",
-        expiresIn: "30s",
-        issuer: "api-gateway",
-      });
+//       const signed = jwt.sign(payload, secret!, {
+//         algorithm: "HS256",
+//         expiresIn: "30s",
+//         issuer: "api-gateway",
+//       });
 
-      req.headers["x-gateway-jwt"] = signed;
+//       req.headers["x-gateway-jwt"] = signed;
 
-      return next();
-    } catch (err: unknown) {
-      if (err instanceof TokenExpiredError) {
-        console.log("token expired");
+//       return next();
+//     } catch (err: unknown) {
+//       if (err instanceof jwt.TokenExpiredError) {
+//         console.log("token expired");
         
-         res
-          .status(StatusCode.Forbidden)
-          .json({ message: "token expired", reason: "token_expired" });
-          return
-      }
-              console.log("invalid expired");
+//          res
+//           .status(StatusCode.Forbidden)
+//           .json({ message: "token expired", reason: "token_expired" });
+//           return
+//       }
+//               console.log("invalid expired");
 
-       res
-        .status(StatusCode.Forbidden)
-        .json({ message: "Invalid token", reason: "invalid_token" });
-        return
-    }
-  };
-}
+//        res
+//         .status(StatusCode.Forbidden)
+//         .json({ message: "Invalid token", reason: "invalid_token" });
+//         return
+//     }
+//   };
+// }

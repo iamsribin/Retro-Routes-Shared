@@ -1,6 +1,7 @@
 import path from "path";
 import { loadSync } from "@grpc/proto-loader";
 import * as grpc from "@grpc/grpc-js";
+import { fileURLToPath } from "url";
 
 const PROTO_OPTIONS = {
   keepCase: false,
@@ -10,8 +11,13 @@ const PROTO_OPTIONS = {
   oneofs: true
 };
 
-function loadPackage(protoFilename: string) {
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+export function loadPackage(protoFilename: string) {
   const protoPath = path.join(__dirname, protoFilename);
+// function loadPackage(protoFilename: string) {
+  // const protoPath = path.join(__dirname, protoFilename);
   const packageDef = loadSync(protoPath, PROTO_OPTIONS);
   return grpc.loadPackageDefinition(packageDef) as any;
 }

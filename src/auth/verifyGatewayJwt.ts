@@ -1,8 +1,7 @@
 import { Request, Response, NextFunction, RequestHandler } from "express";
 import jwt from "jsonwebtoken";
-import { AccessPayload } from "./auth";
+import { AccessPayload } from "./types";
 import { IRole } from "../interfaces/common-types";
-
 
 declare global {
   namespace Express {
@@ -11,7 +10,6 @@ declare global {
     }
   }
 }
-
 
 export function verifyGatewayJwt(strict = true, GATEWAY_SECRET:string, options?: { role?: IRole | IRole[] }): RequestHandler {
       

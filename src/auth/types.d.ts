@@ -7,3 +7,8 @@ declare global {
     }
   }
 }
+
+export type AccessPayload = JwtPayload & {
+  id: string;
+  role: "User" | "Driver" | "Admin";
+};

@@ -1,4 +1,5 @@
 export * from "./HttpError";
+export * from "./errorHandler";
 
 export const BadRequestError = (message = "Bad request", opts?: any) =>
   new (require("./HttpError").HttpError)(400, message, { code: "BAD_REQUEST", ...opts });
